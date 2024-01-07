@@ -1,22 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const { validationSchema } = require("../middlewares/validationSchema");
 const coursesController = require("../controllers/corses.controllers");
-const { body } = require("express-validator");
-
 router
   .route("/")
   .get(coursesController.getAllCourses)
-  .post(
-    [
-      body("title")
-        .notEmpty()
-        .withMessage("title is required")
-        .isLength({ min: 3 })
-        .withMessage("title at least 3 digits"),
-      body("price").notEmpty().withMessage("price is required"),
-    ],
-    coursesController.addCourse
-  );
+  .post(validationSchema(), coursesController.addCourse);
 
 router
   .route("/:courseId")
