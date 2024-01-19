@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const Course = require("../models/course.modle");
 const httpStatusText = require("../utils/httpStatus");
+const asyncWrapper = require("../middlewares/asyncWrapper");
 const { query } = require("express");
 
 const getAllCourses = async (req, res) => {
@@ -11,29 +12,29 @@ const getAllCourses = async (req, res) => {
   res.status(200).json({ status: httpStatusText.SUCCESS, data: { courses } });
 };
 
-const getSingleCourse = async (req, res) => {
-  try {
-    const course = await Course.findById(req.params.courseId, { __v: false });
-    if (!course) {
-      return res.status(404).json({
-        status: httpStatusText.FAIL,
-        data: { course: httpStatusText.NOT_FOUND },
-      });
-    }
-    return res
-      .status(200)
-      .json({ status: httpStatusText.SUCCESS, data: { course } });
-  } catch (error) {
-    return res.status(400).json({
-      status: httpStatusText.ERROR,
-      data: null,
-      message: error.message,
-      code: 400,
+const getSingleCourse = asyncWrapper(async (req, res) => {
+  const course = await Course.findById(req.params.courseId, { __v: false });
+  if (!course) {
+    return res.status(404).json({
+      status: httpStatusText.FAIL,
+      data: { course: httpStatusText.NOT_FOUND },
     });
   }
-};
+  return res
+    .status(200)
+    .json({ status: httpStatusText.SUCCESS, data: { course } });
+  // try {
+  // } catch (error) {
+  //   return res.status(400).json({
+  //     status: httpStatusText.ERROR,
+  //     data: null,
+  //     message: error.message,
+  //     code: 400,
+  //   });
+  // })
+});
 
-const addCourse = async (req, res) => {
+const addCourse = asyncWrapper(async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res
@@ -45,30 +46,30 @@ const addCourse = async (req, res) => {
   res
     .status(201)
     .json({ status: httpStatusText.SUCCESS, data: { course: newCourse } });
-};
+});
 
-const updateCourse = async (req, res) => {
-  try {
-    const course = await Course.updateOne(
-      { _id: req.params.courseId },
-      {
-        $set: { ...req.body },
-      }
-    );
-    return res
-      .status(200)
-      .json({ status: httpStatusText.SUCCESS, data: { course: course } });
-  } catch (error) {
-    return res
-      .status(400)
-      .json({ status: httpStatusText.ERROR, message: error.message });
-  }
-};
+const updateCourse = asyncWrapper(async (req, res) => {
+  const course = await Course.updateOne(
+    { _id: req.params.courseId },
+    {
+      $set: { ...req.body },
+    }
+  );
+  return res
+    .status(200)
+    .json({ status: httpStatusText.SUCCESS, data: { course: course } });
+  // try {
+  // } catch (error) {
+  //   return res
+  //     .status(400)
+  //     .json({ status: httpStatusText.ERROR, message: error.message });
+  // }
+});
 
-const deleteCourse = async (req, res) => {
+const deleteCourse = asyncWrapper(async (req, res) => {
   await Course.deleteOne({ _id: req.params.courseId });
   res.status(200).json({ status: httpStatusText.SUCCESS, data: null });
-};
+});
 
 module.exports = {
   getAllCourses,

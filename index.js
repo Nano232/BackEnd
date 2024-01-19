@@ -19,6 +19,9 @@ app.all("*", (req, res) => {
     message: "This Resource Is Not Available",
   });
 });
+app.use((err, req, res, next) => {
+  res.status(500).json({ status: httpStatusText.ERROR, msg: err.message });
+});
 app.listen(port, () => {
   console.log(`Listining On Port: ${port}`);
 });
