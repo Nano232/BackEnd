@@ -1,7 +1,7 @@
 const asyncWrapper = require("../middlewares/asyncWrapper");
 const User = require("../models/user.modle");
 const httpStatusText = require("../utils/httpStatus.js");
-
+const bcrypt = require("bcryptjs");
 const getAllUsers = asyncWrapper(async (req, res) => {
   const limit = req.query.limit || 10;
   const page = req.query.page || 1;
@@ -11,11 +11,19 @@ const getAllUsers = asyncWrapper(async (req, res) => {
 });
 const register = asyncWrapper(async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
+  const oldUser = await User.findOne({ email: email }, { __v: false });
+  if (oldUser) {
+    return res
+      .status(400)
+      .json({ status: httpStatusText.FAIL, msg: "this user already created" });
+  }
+  // password hashing
+  const hashePassword = await bcrypt.hash(password, 10);
   const newUser = new User({
     firstName,
     lastName,
     email,
-    password,
+    password: hashePassword,
   });
   await newUser.save();
   res
