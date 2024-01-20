@@ -6,12 +6,14 @@ const getAllUsers = asyncWrapper(async (req, res) => {
   const limit = req.query.limit || 10;
   const page = req.query.page || 1;
   const skip = (page - 1) * limit;
-  const users = await User.find({}, { __v: false }).limit(limit).skip(skip);
+  const users = await User.find({}, { __v: false, password: false })
+    .limit(limit)
+    .skip(skip);
   res.status(200).json({ status: httpStatusText.SUCCESS, data: { users } });
 });
 const register = asyncWrapper(async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
-  const oldUser = await User.findOne({ email: email }, { __v: false });
+  const oldUser = await User.findOne({ email: email });
   if (oldUser) {
     return res
       .status(400)
