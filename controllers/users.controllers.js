@@ -9,7 +9,19 @@ const getAllUsers = asyncWrapper(async (req, res) => {
   const users = await User.find({}, { __v: false }).limit(limit).skip(skip);
   res.status(200).json({ status: httpStatusText.SUCCESS, data: { users } });
 });
-const register = () => {};
+const register = asyncWrapper(async (req, res) => {
+  const { firstName, lastName, email, password } = req.body;
+  const newUser = new User({
+    firstName,
+    lastName,
+    email,
+    password,
+  });
+  await newUser.save();
+  res
+    .status(201)
+    .json({ status: httpStatusText.SUCCESS, data: { user: newUser } });
+});
 const login = () => {};
 module.exports = {
   getAllUsers,
