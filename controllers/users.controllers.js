@@ -32,7 +32,32 @@ const register = asyncWrapper(async (req, res) => {
     .status(201)
     .json({ status: httpStatusText.SUCCESS, data: { user: newUser } });
 });
-const login = () => {};
+const login = asyncWrapper(async (req, res) => {
+  const { email, password } = req.body;
+  if (!email && !password) {
+    res.status(400).josn({
+      status: httpStatusText.FAIL,
+      msg: "email and password are required",
+    });
+  }
+  const user = await User.findOne({ email: email });
+  if (!user) {
+    res
+      .status(400)
+      .json({ status: httpStatusText.FAIL, data: "user not found" });
+  }
+  const matchedPassword = await bcrypt.compare(password, user.password);
+  if (user && matchedPassword) {
+    res.status(200).json({
+      status: httpStatusText.SUCCESS,
+      data: { user: `loged in successfully` },
+    });
+  } else {
+    res
+      .status(500)
+      .json({ status: httpStatusText.ERROR, msg: "something wrong" });
+  }
+});
 module.exports = {
   getAllUsers,
   register,
