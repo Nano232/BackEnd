@@ -58,12 +58,6 @@ const updateCourse = asyncWrapper(async (req, res) => {
   return res
     .status(200)
     .json({ status: httpStatusText.SUCCESS, data: { course: course } });
-  // try {
-  // } catch (error) {
-  //   return res
-  //     .status(400)
-  //     .json({ status: httpStatusText.ERROR, message: error.message });
-  // }
 });
 
 const deleteCourse = asyncWrapper(async (req, res) => {
