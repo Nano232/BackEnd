@@ -1,8 +1,11 @@
 const asyncWrapper = require("../middlewares/asyncWrapper");
 const User = require("../models/user.modle");
+const generateJWT = require("../utils/generateJWT");
 const httpStatusText = require("../utils/httpStatus.js");
 const bcrypt = require("bcryptjs");
+
 const getAllUsers = asyncWrapper(async (req, res) => {
+  // console.log(req.headers);
   const limit = req.query.limit || 10;
   const page = req.query.page || 1;
   const skip = (page - 1) * limit;
@@ -11,6 +14,7 @@ const getAllUsers = asyncWrapper(async (req, res) => {
     .skip(skip);
   res.status(200).json({ status: httpStatusText.SUCCESS, data: { users } });
 });
+
 const register = asyncWrapper(async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
   const oldUser = await User.findOne({ email: email });
@@ -27,11 +31,15 @@ const register = asyncWrapper(async (req, res) => {
     email,
     password: hashePassword,
   });
+  // generate token
+  const token = await generateJWT({ email: newUser.email, id: newUser._id });
+  newUser.token = token;
   await newUser.save();
   res
     .status(201)
     .json({ status: httpStatusText.SUCCESS, data: { user: newUser } });
 });
+
 const login = asyncWrapper(async (req, res) => {
   const { email, password } = req.body;
   if (!email && !password) {
@@ -48,9 +56,10 @@ const login = asyncWrapper(async (req, res) => {
   }
   const matchedPassword = await bcrypt.compare(password, user.password);
   if (user && matchedPassword) {
+    const token = await generateJWT({ email: user.email, id: user._id });
     res.status(200).json({
       status: httpStatusText.SUCCESS,
-      data: { user: `loged in successfully` },
+      data: { token },
     });
   } else {
     res
