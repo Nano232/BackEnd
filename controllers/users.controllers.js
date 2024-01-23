@@ -33,7 +33,11 @@ const register = asyncWrapper(async (req, res) => {
     role,
   });
   // generate token
-  const token = await generateJWT({ email: newUser.email, id: newUser._id });
+  const token = await generateJWT({
+    email: newUser.email,
+    id: newUser._id,
+    role: newUser.role,
+  });
   newUser.token = token;
   await newUser.save();
   res
@@ -57,7 +61,11 @@ const login = asyncWrapper(async (req, res) => {
   }
   const matchedPassword = await bcrypt.compare(password, user.password);
   if (user && matchedPassword) {
-    const token = await generateJWT({ email: user.email, id: user._id });
+    const token = await generateJWT({
+      email: user.email,
+      id: user._id,
+      role: user.role,
+    });
     res.status(200).json({
       status: httpStatusText.SUCCESS,
       data: { token },

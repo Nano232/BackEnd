@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { validationSchema } = require("../middlewares/validationSchema");
 const coursesController = require("../controllers/corses.controllers");
+const verfiyToken = require("../middlewares/verfiyToken.js");
 router
   .route("/")
   .get(coursesController.getAllCourses)
@@ -11,6 +12,6 @@ router
   .route("/:courseId")
   .get(coursesController.getSingleCourse)
   .patch(coursesController.updateCourse)
-  .delete(coursesController.deleteCourse);
+  .delete(verfiyToken, coursesController.deleteCourse);
 
 module.exports = router;
